@@ -1,0 +1,80 @@
+curl -XDELETE 'http://localhost:9200/cities'
+
+
+curl -XPUT http://localhost:9200/cities -d '
+{
+    "mappings": {
+        "poi": {
+            "properties": {
+                "location": {"type": "geo_point"}
+            }
+        }
+    }
+}
+'
+
+
+curl -XPUT 'http://localhost:9200/cities/poi/1' -d '{
+    "location": {
+      "lat":0,
+      "lon":0
+    }
+}'
+
+
+curl -XGET 'http://localhost:9200/cities/poi/1'
+
+
+curl -XGET 'http://localhost:9200/cities/poi/_search' -d '
+{
+  "query": {
+    "filtered" : {
+      "query" : {
+        "match_all" : {}
+      },
+      "filter" : {
+        "geo_bounding_box" : {
+          "location" : {
+            "top_left" : {
+              "lat" : 42.4766667,
+              "lon" : 1.4
+            },
+            "bottom_right" : {
+              "lat" : 42.4566667,
+              "lon" : 1.6
+            }
+          }
+        }
+      }
+    }
+  }
+}
+' 
+
+
+curl -XGET 'http://localhost:9200/cities/_search' -d '
+{
+  "query": {
+    "filtered" : {
+      "query" : {
+        "match_all" : {}
+      },
+      "filter" : {
+        "geo_bounding_box" : {
+          "poi.location" : {
+            "top_left" : {
+              "lat" : 42.4766667,
+              "lon" : 1.4
+            },
+            "bottom_right" : {
+              "lat" : 42.4566667,
+              "lon" : 1.6
+            }
+          }
+        }
+      }
+    }
+  }
+}
+' 
+
